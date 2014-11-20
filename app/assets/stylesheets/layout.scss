@@ -13,6 +13,11 @@ body {
   font-family: 'Source Sans Pro';
 }
 
+#main {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
 button, input {
   padding: 15px 30px;
   font-size: inherit;
@@ -45,4 +50,11 @@ section {
   padding: 30px;
   border: 1px solid $grayer;
   background: $white;
+  align-items: center;
+  opacity: .6;
+  cursor: pointer;
 }
+
+.movie.active { opacity: 1; }
+
+.movie span { margin-left: 15px; }

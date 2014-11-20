@@ -8,7 +8,7 @@ class TomatoAdapter
 
   def search(movie)
     raise ArgumentError, "You must pass a movie to search" if movie.blank?
-    options = { query: { q: movie, page_limit: 5} }
+    options = { query: { q: movie} }
     self.class.get "/movies.json", options
   end
  

@@ -1,5 +1,3 @@
-%h1 Welcome
-
 %section.query
   .error
   = text_field_tag :query, nil, placeholder: 'Type in a movie name, bro.'
@@ -10,7 +8,7 @@
 
 %script#movie-template(type="text/x-handlebars-template")
   %section.movie
-    %span.title {{ title }}
     %img(src="{{ posters.original }}")
+    %span.title {{ title }}
  
   
