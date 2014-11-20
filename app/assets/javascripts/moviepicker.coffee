@@ -13,6 +13,16 @@ createClickStream = ->
     .map (event) ->
       $(event.delegateTarget)
 
+disableForm = ->
+  movieButton.attr('disabled', true)
+  $('#query').val('')
+  $('<div>')
+    .addClass('spinner')
+    .appendTo(movieField)
+
+endableForm = ->
+  movieButton.attr('disabled', false)
+
 # events
 $(document).on 'keyup', '#query', (event) ->
   movieButton.trigger('click') if event.which == 13
@@ -23,13 +33,14 @@ movieClickStream = Rx.Observable.fromEvent movieButton, 'click'
 requestStream = movieClickStream
   .map ->
     movieName = $('#query').val()
-    $('#query').val('')
     "/movies/list?movie=#{movieName}"
 
 responseStream = requestStream
   .flatMap (requestUrl) ->
+    disableForm()
     Rx.Observable.fromPromise($.getJSON(requestUrl))
 
+# subscription
 responseStream.subscribe(
   (json) ->
     movieField.text('')

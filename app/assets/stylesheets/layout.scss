@@ -1,5 +1,6 @@
 @import 'colors';
 @import 'fonts';
+@import 'bourbon';
 
 html, body {
   margin: 0;
@@ -9,6 +10,7 @@ html, body {
 body {
   padding: 30px;
   background: $gray;
+  color: $black;
   font-size: 22px;
   font-family: 'Source Sans Pro';
 }
@@ -28,6 +30,7 @@ button {
   color: $white;
   background: $red;
   border: 0;
+  @include transition(all .3s ease);
 }
 
 input {
@@ -45,16 +48,22 @@ section {
 
 .movie {
   min-width: calc(33.3% - 15px);
+  height: 150px;
   margin: 7.5px;
   flex: 1;
   padding: 30px;
   border: 1px solid $grayer;
   background: $white;
   align-items: center;
-  opacity: .6;
+  opacity: .5;
   cursor: pointer;
+  @include transition(all .2s ease);
 }
 
-.movie.active { opacity: 1; }
+.movie.active, .movie:hover { 
+  opacity: 1; 
+}
 
 .movie span { margin-left: 15px; }
+
+button:disabled { opacity: .5; background: $redish; cursor: no-drop;}
