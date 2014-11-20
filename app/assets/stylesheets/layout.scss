@@ -1,0 +1,48 @@
+@import 'colors';
+@import 'fonts';
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  padding: 30px;
+  background: $gray;
+  font-size: 22px;
+  font-family: 'Source Sans Pro';
+}
+
+button, input {
+  padding: 15px 30px;
+  font-size: inherit;
+  margin: 5px;
+}
+
+button {
+  color: $white;
+  background: $red;
+  border: 0;
+}
+
+input {
+  flex: 1;
+}
+  
+section {
+  display: flex;
+  box-sizing: border-box;
+}
+
+.movies {
+  flex-wrap: wrap;
+}
+
+.movie {
+  min-width: calc(33.3% - 15px);
+  margin: 7.5px;
+  flex: 1;
+  padding: 30px;
+  border: 1px solid $grayer;
+  background: $white;
+}
