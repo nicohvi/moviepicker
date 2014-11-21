@@ -20,7 +20,7 @@ disableForm = ->
     .addClass('spinner')
     .appendTo(movieField)
 
-endableForm = ->
+enableForm = ->
   movieButton.attr('disabled', false)
 
 # events
@@ -32,6 +32,7 @@ movieClickStream = Rx.Observable.fromEvent movieButton, 'click'
 
 requestStream = movieClickStream
   .map ->
+    movieField.text('')
     movieName = $('#query').val()
     "/movies/list?movie=#{movieName}"
 
@@ -43,9 +44,11 @@ responseStream = requestStream
 # subscription
 responseStream.subscribe(
   (json) ->
-    movieField.text('')
+    movies = []
     for movie in json.movies
-      movieField.append movieTemplate(movie)
+      movies.push movieTemplate(movie)
+    movieField.html(movies)
+    enableForm()
     clickStream = createClickStream()
 
     clickStream.subscribe(
