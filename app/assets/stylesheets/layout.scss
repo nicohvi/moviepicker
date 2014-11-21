@@ -2,13 +2,17 @@
 @import 'fonts';
 @import 'bourbon';
 
+html, body, div { box-sizing: border-box; }
+
 html, body {
   margin: 0;
   padding: 0;
+  display: flex;
+  min-height: 100vh;
+  flex: 1;
 }
 
 body {
-  padding: 30px;
   background: $gray;
   color: $black;
   font-size: 22px;
@@ -16,8 +20,12 @@ body {
 }
 
 #main {
+  padding-top: 30px;
   max-width: 800px;
   margin: 0 auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 button, input {
@@ -33,24 +41,32 @@ button {
   @include transition(all .3s ease);
 }
 
-input {
-  flex: 1;
-}
+input { flex: 1; }
+
+h2, h3 { margin: 0; }
   
-section {
+section, footer {
   display: flex;
   box-sizing: border-box;
 }
 
 .movies {
   flex-wrap: wrap;
+  @include transition(all .4s ease);
+  opacity: 1;
+  padding-bottom: 30px;
+}
+
+.movies.collapse {
+  opacity: .5;
+  overflow: hidden;
 }
 
 .movie {
   min-width: calc(33.3% - 15px);
+  max-width: calc(33.3% - 15px);
   height: 150px;
   margin: 7.5px;
-  flex: 1;
   padding: 30px;
   border: 1px solid $grayer;
   background: $white;
@@ -58,12 +74,39 @@ section {
   opacity: .5;
   cursor: pointer;
   @include transition(all .2s ease);
+  overflow: hidden;
+}
+
+.movie:last-of-type {
+  max-width: inherit;
+  flex: 1;
 }
 
 .movie.active, .movie:hover { 
   opacity: 1; 
 }
 
-.movie span { margin-left: 15px; }
+img { margin-right: 15px; }
 
 button:disabled { opacity: .5; background: $redish; cursor: no-drop;}
+
+#movie {
+  background: $white;
+  padding: 30px;
+  @include transition(all .4s ease);
+  align-items: flex-start;
+  border-top: 2px solid $grayer;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 250px;
+  @include transform(translate3d(0, 230px, 0));
+}
+
+#movie.show { @include transform(translate3d(0,0,0)); }
+
+#movie section { flex: 1; flex-direction: column;}
+#movie .meta { flex: inherit; }

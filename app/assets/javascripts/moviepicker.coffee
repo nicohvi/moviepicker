@@ -5,10 +5,13 @@ moviesContainer   = $('.movies')
 movieContainer    = $('#movie')
 movieListTemplate = Handlebars.compile $('#movie-list-template').html()
 movieTemplate     = Handlebars.compile $('#movie-template').html()
-
+baseMovieId       = 0
 # functions
 
 disableForm = ->
+  moviesContainer.text('')
+  movieContainer.text('')
+  $('#movie').removeClass('show')
   queryButton.attr('disabled', true)
   $('#query').val('')
   $('<div>')
@@ -31,17 +34,27 @@ queryClicks = clickStream
   .filter (event) ->
     $(event.target).attr('id') == 'query-button'
 
+closeClicks = clickStream
+  .filter (event) ->
+    $(event.target).attr('id') == 'movie'
+
 movieClicks = clickStream
   .debounce(500)
   .filter (event) ->
     $(event.target).hasClass('movie') || $(event.target).parents('.movie').length > 0
-
-movieIDs = movieClicks
   .map (event) ->
     if $(event.target).hasClass('movie')
-      $(event.target).data('id')
+      $el = $(event.target)
     else
-      $(event.target).parents('.movie:first').data('id')
+      $el = $(event.target).parents('.movie:first')
+
+movieIDs = movieClicks
+  .map (movie) ->
+    if $('.active').data('id') != movie.data('id')
+      $('.active').removeClass('active')
+      movie.addClass('active')
+    $('#movie').removeClass('show')
+    movie.data('id')
 
 searchURLs = queryClicks
   .map ->
@@ -51,6 +64,7 @@ searchURLs = queryClicks
 
 similarMovieURLs = movieIDs
   .map (id) ->
+    baseMovieId = id
     "/movies/similar/#{id}"
 
 requests  = Rx.Observable.merge(searchURLs, similarMovieURLs)
@@ -61,17 +75,19 @@ responses = requests
 
 jsonResponses = responses.publish()
 
-movieListHTML = jsonResponses
-  .filter (json) ->
-    json.movies?
+movieJSON     = jsonResponses.filter (json) -> !json.total?
+movieListJSON = jsonResponses.filter (json) -> json.total?
+
+movieListHTML = movieListJSON
   .map (json) ->
     _.map(json.movies, (movie) -> movieListTemplate(movie))
 
-movieHTML = jsonResponses
-  .filter (json) ->
-    json.movie != null
+movieHTML = movieJSON
   .map (json) ->
-    movieTemplate(json.movie)
+    if json.movies.length > 0
+      movieTemplate _.sample(json.movies)
+    else
+      "Sorry, no suggeted movies for that one - get better taste please."
 
 # subscriptions
 
@@ -83,8 +99,13 @@ movieListHTML.subscribe(
 
 movieHTML.subscribe(
   (html) ->
+    $('#movie').addClass('show')
+    console.log 'cqllad'
     movieContainer.html(html)
 )
 
+closeClicks.subscribe(
+  -> $('#movie').toggleClass('show')
+)
 
 jsonResponses.connect()

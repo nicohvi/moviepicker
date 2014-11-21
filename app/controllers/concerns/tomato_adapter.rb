@@ -11,5 +11,10 @@ class TomatoAdapter
     options = { query: { q: movie} }
     self.class.get "/movies.json", options
   end
+
+  def similar(movie_id)
+    raise ArgumentError, "You need to pass a movie id to find similar" if movie_id.blank?
+    self.class.get "/movies/#{movie_id}/similar.json"
+  end
  
 end

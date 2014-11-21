@@ -13,6 +13,7 @@ gem 'haml'
 gem 'httparty'
 gem 'figaro'
 gem 'bourbon'
+gem 'font-awesome-rails'
 
 group :development, :test do
   gem 'byebug'

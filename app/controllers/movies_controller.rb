@@ -5,13 +5,14 @@ class MoviesController < ApplicationController
 
   end
 
-  def list # rename search
+  def list # TODO rename search
     json = @tomato_adapter.search(params[:movie])
     render json: JSON.parse(json)
   end
 
   def similar
-    render json: { movie: { title: 'Derpa derp', poster: { original: 'nah' } } }
+    json = @tomato_adapter.similar(params[:tomato_id])
+    render json: JSON.parse(json)
   end
 
   private
