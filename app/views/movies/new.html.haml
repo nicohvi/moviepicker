@@ -1,14 +1,20 @@
 %section.query
   .error
   = text_field_tag :query, nil, placeholder: 'Type in a movie name, bro.'
-  = button_tag id: 'movie-button' do
-    Click me!
+  = button_tag id: 'query-button' do
+    Search!
 
 %section.movies
 
-%script#movie-template(type="text/x-handlebars-template")
-  %section.movie
+%section#movie
+
+%script#movie-list-template(type="text/x-handlebars-template")
+  %section.movie{ data: { id: "{{id}}"  }}
     %img(src="{{ posters.original }}")
     %span.title {{ title }}
+
+%script#movie-template(type="text/x-handlebars-template")
+  %img(src="{{ posters.original }}")
+  %h2.title {{ title }}
  
   

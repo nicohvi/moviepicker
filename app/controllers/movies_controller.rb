@@ -1,5 +1,5 @@
 class MoviesController < ApplicationController
-  before_filter :set_tomato_adapter, only: :list
+  before_filter :set_tomato_adapter, except: :new
 
   def new
 
@@ -8,6 +8,10 @@ class MoviesController < ApplicationController
   def list # rename search
     json = @tomato_adapter.search(params[:movie])
     render json: JSON.parse(json)
+  end
+
+  def similar
+    render json: { movie: { title: 'Derpa derp', poster: { original: 'nah' } } }
   end
 
   private
