@@ -18,7 +18,8 @@ class IMDBAdapter
   end
 
   def similar(movie_id)
-    sanitize_single(call_async("http://www.imdb.com/title/tt0435761/?ref_=fn_al_tt_8"))
+    raise ArgumentError, "You must pass a movie to search" if movie_id.blank?
+    sanitize_single(call_async("http://www.imdb.com/title/#{movie_id}/?ref_=fn_al_tt_8"))
   end
 
   private

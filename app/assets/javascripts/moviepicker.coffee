@@ -53,7 +53,7 @@ movieClicks = clickStream
 
 movieCache = movieClicks
   .filter (movieElement) ->
-    suggestedMovies.length != 0 || movie == movieElement.find('.title').text()
+    suggestedMovies.length != 0 && movie == movieElement.find('.title').text()
 
 movieIDs = movieClicks
   .filter (movieElement) ->
@@ -62,8 +62,8 @@ movieIDs = movieClicks
     if $('.active').data('tomato_id') != movieElement.data('tomato_id')
       $('.active').removeClass('active')
       movieElement.addClass('active')
-    $('#movie').removeClass('show')
     movie = movieElement.find('.title').text()
+    $('#movie').removeClass('show')
     { tomatoID: movieElement.data('tomatoId'), imdbID: movieElement.data('imdbId') }
 
 searchURLs = queryClicks

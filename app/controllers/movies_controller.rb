@@ -16,8 +16,8 @@ class MoviesController < ApplicationController
   end
 
   def similar
-    tomato_json = @tomato_adapter.similar(params[:tomato_id])
-    imdb_json   = @imdb_adapter.similar(params[:imdb_id])
+    tomato_json = @tomato_adapter.similar(params[:tomato_id]) unless params[:tomato_id].blank?
+    imdb_json   = @imdb_adapter.similar(params[:imdb_id]) unless params[:imdb_id].blank?
     movies = merge_api_responses(tomato_json, imdb_json)
     render json: movies
   end
@@ -30,6 +30,8 @@ class MoviesController < ApplicationController
   end
 
   def merge_api_responses(tomato_json, imdb_json)
+    tomato_json ||= []
+    imdb_json ||= []
     movies = tomato_json + imdb_json
     movies.group_by { |movie| movie[:title] }.map { |key, value| value.inject(:merge) }
   end
