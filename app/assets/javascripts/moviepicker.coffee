@@ -1,11 +1,14 @@
 # variables
+
 queryButton       = $('#query-button')
 errorField        = $('.error') 
 moviesContainer   = $('.movies')
 movieContainer    = $('#movie')
 movieListTemplate = Handlebars.compile $('#movie-list-template').html()
 movieTemplate     = Handlebars.compile $('#movie-template').html()
-baseMovieId       = 0
+movie             = ''
+suggestedMovies   = []
+
 # functions
 
 disableForm = ->
@@ -14,9 +17,9 @@ disableForm = ->
   $('#movie').removeClass('show')
   queryButton.attr('disabled', true)
   $('#query').val('')
-  $('<div>')
-    .addClass('spinner')
-    .appendTo(moviesContainer)
+
+spin = -> $('.spinner').addClass('show')
+unspin = -> $('.spinner').removeClass('show')
 
 enableForm = ->
   queryButton.attr('disabled', false)
@@ -44,63 +47,79 @@ movieClicks = clickStream
     $(event.target).hasClass('movie') || $(event.target).parents('.movie').length > 0
   .map (event) ->
     if $(event.target).hasClass('movie')
-      $el = $(event.target)
+      $(event.target)
     else
-      $el = $(event.target).parents('.movie:first')
+      $(event.target).parents('.movie:first')
+
+movieCache = movieClicks
+  .filter (movieElement) ->
+    suggestedMovies.length != 0 || movie == movieElement.find('.title').text()
 
 movieIDs = movieClicks
-  .map (movie) ->
-    if $('.active').data('id') != movie.data('id')
+  .filter (movieElement) ->
+    suggestedMovies.length == 0 || movie != movieElement.find('.title').text()
+  .map (movieElement) ->
+    if $('.active').data('tomato_id') != movieElement.data('tomato_id')
       $('.active').removeClass('active')
-      movie.addClass('active')
+      movieElement.addClass('active')
     $('#movie').removeClass('show')
-    movie.data('id')
+    movie = movieElement.find('.title').text()
+    { tomatoID: movieElement.data('tomatoId'), imdbID: movieElement.data('imdbId') }
 
 searchURLs = queryClicks
   .map ->
     movieName = $('#query').val()
     disableForm()
-    "/movies/list?movie=#{movieName}"
+    "/movies/search?movie=#{movieName}"
 
 similarMovieURLs = movieIDs
   .map (id) ->
-    baseMovieId = id
-    "/movies/similar/#{id}"
+    "/movies/similar?tomato_id=#{id.tomatoID}&imdb_id=#{id.imdbID}"
 
 requests  = Rx.Observable.merge(searchURLs, similarMovieURLs)
 
 responses = requests
   .flatMap (requestUrl) ->
+    spin()
     Rx.Observable.fromPromise $.getJSON(requestUrl)
 
+# Turn into hot source
 jsonResponses = responses.publish()
 
-movieJSON     = jsonResponses.filter (json) -> !json.total?
+movieJSON     = jsonResponses
+  .filter (json) -> !json.total?
+  .map  (json) -> suggestedMovies = json
+
 movieListJSON = jsonResponses.filter (json) -> json.total?
 
 movieListHTML = movieListJSON
   .map (json) ->
     _.map(json.movies, (movie) -> movieListTemplate(movie))
 
-movieHTML = movieJSON
-  .map (json) ->
-    if json.movies.length > 0
-      movieTemplate _.sample(json.movies)
+movieHTML = movieCache
+  .merge(movieJSON)
+  .map ->
+    if suggestedMovies.length > 0
+      suggestion = _.sample(suggestedMovies)
+      index = suggestedMovies.indexOf(suggestion)
+      suggestedMovies.splice(index, 1)
+      movieTemplate(suggestion)
     else
       "Sorry, no suggeted movies for that one - get better taste please."
-
+   
 # subscriptions
 
 movieListHTML.subscribe(
   (html) ->
+    unspin()
     moviesContainer.html(html)
     enableForm()
 )
 
 movieHTML.subscribe(
   (html) ->
+    unspin()
     $('#movie').addClass('show')
-    console.log 'cqllad'
     movieContainer.html(html)
 )
 

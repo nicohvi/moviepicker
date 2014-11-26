@@ -14,6 +14,8 @@ gem 'httparty'
 gem 'figaro'
 gem 'bourbon'
 gem 'font-awesome-rails'
+gem 'promise'
+gem 'nokogiri'
 
 group :development, :test do
   gem 'byebug'

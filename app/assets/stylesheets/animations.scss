@@ -3,12 +3,12 @@
 
 .spinner {
   width: 60px;
-  height: 60px;
   background-color: $grayest;
-
-  margin: 50% auto;
+  @include transition(all .4s ease);
   @include animation(rotateplane 1.2s infinite ease-in-out);
 }
+
+.spinner.show { opacity: 1; height: 60px; margin: 30px auto; }
 
 @include keyframes(rotateplane) {
   0% { @include transform(perspective(120px)) }

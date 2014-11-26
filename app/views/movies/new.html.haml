@@ -4,19 +4,23 @@
   = button_tag id: 'query-button' do
     Search!
 
+%section.spinner
+
 %section.movies
 
 %section#movie
 
 %script#movie-list-template(type="text/x-handlebars-template")
-  %section.movie{ data: { id: "{{id}}"  }}
-    %img(src="{{ posters.original }}")
+  %section.movie{ data: { tomato_id: "{{tomato_id}}", imdb_id: "{{imdb_id}}"  }}
+    %img(src="{{ image }}")
     %span.title {{ title }}
 
 %script#movie-template(type="text/x-handlebars-template")
-  %img(src="{{ posters.original }}")
-  %section.info{ data: { id: "{{id}}" }}
+  %img(src="{{ image }}")
+  %section.info 
     %h2.title {{ title }}
-    %h3.rating {{ ratings.audience_score }}
+    %h3.rating Critics think: {{ tomato_rating.critics }}
+    %h3.rating The audience thinks: {{ tomato_rating.audience }}
+    %h3.rating IMDB thinks: {{ imdb_rating }}
    
   
