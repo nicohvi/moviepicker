@@ -35,6 +35,8 @@ queryURLStream = queryButton.asEventStream('click')
     query.val().length > 1
   .map ->
     movie = query.val()
+  .skipDuplicates()
+  .map (movie) ->
     "/movies/search?movie=#{movie}"
 
 movieURLStream = $('body').asEventStream('click', '.movie')
@@ -53,7 +55,9 @@ movieListStream = responseStream
 
 movieStream     = responseStream
   .filter (json) -> !json.total?
-  .map    (json) -> movieTemplate _.bob(json)
+  .map    (json) ->
+    movie = _.bob(json)
+    if movie? then movieTemplate(movie) else "Sorry bro, no recommendations available. Get better taste, please."
 
 requestInProgress = requestStream.merge(responseStream)
 
@@ -63,4 +67,3 @@ requestInProgress.onValue -> toggleRequest()
 movieListStream.onValue (html) -> movieList.html(html)
 movieStream.onValue     (html) -> suggestedMovie.html(html).addClass('show')
 
-    
