@@ -39,7 +39,6 @@ class IMDBAdapter
       { 
         title:        similar_movie.css('.rec-title a').text,
         release_year: similar_movie.css('.rec-title .nobr').text.delete('()'),
-        image:        get_image(similar_movie.css('.rec_poster img')),
         imdb_rating:  similar_movie.css('.value').text
       }
     }.reject { |movie| movie[:imdb_rating].blank? }

@@ -16,7 +16,11 @@
     %span.title {{ title }}
 
 %script#movie-template(type="text/x-handlebars-template")
+  {{# if image }}
   %img(src="{{ image }}")
+  {{ else }}
+  = image_tag('movie.svg')
+  {{/if}}
   %section.info 
     %h2.title {{ title }} {{# if release_year }} ({{ release_year }}) {{/if}}
     {{# if tomato_rating }}
