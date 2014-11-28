@@ -238,7 +238,7 @@
    * implicitly or explicitly included in the build.
    *
    * The chainable wrapper functions are:
-   * `after`, `assign`, `bind`, `bindAll`, `bindKey`, `chain`, `compact`,
+   * `after`, `assign`, `bind`, `bindAll`, `bindKey`, `bob`, `chain`, `compact`,
    * `compose`, `concat`, `countBy`, `create`, `createCallback`, `curry`,
    * `debounce`, `defaults`, `defer`, `delay`, `difference`, `filter`, `flatten`,
    * `forEach`, `forEachRight`, `forIn`, `forInRight`, `forOwn`, `forOwnRight`,
@@ -2632,6 +2632,13 @@
     result.length = nativeMin(nativeMax(0, n), result.length);
     return result;
   }
+  
+
+  function bob(collection) {
+    var index = collection ? baseRandom(0, collection.length -1) : -1,
+        collection = collection || [];
+    return collection.splice(index,1)[0];
+  }
 
   /**
    * Creates an array of shuffled values, using a version of the Fisher-Yates
@@ -4875,6 +4882,7 @@
   lodash.template = template;
   lodash.unescape = unescape;
   lodash.uniqueId = uniqueId;
+  lodash.bob = bob;
 
   // add aliases
   lodash.all = every;

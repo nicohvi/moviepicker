@@ -2,7 +2,7 @@ require 'nokogiri'
 
 class IMDBAdapter
   include HTTParty
-  include AsyncCaller
+  include AdapterBridge
   base_uri 'http://www.imdb.com/'
   headers 'Accept-language' => 'en-US'
     
@@ -11,38 +11,42 @@ class IMDBAdapter
   end 
   
   def search(movie)
-    raise ArgumentError, "You must pass a movie to search" if movie.blank?
-    options = { query: { q: movie } }
-    api_response = call_async('/find', options)
-    sanitize_list(api_response)
+    return [] if movie.blank?
+    options = { query: { title: movie, title_type: 'feature' } }
+    sanitize_list(call_async('/search/title', options))
   end
 
   def similar(movie_id)
-    raise ArgumentError, "You must pass a movie to search" if movie_id.blank?
-    sanitize_single(call_async("http://www.imdb.com/title/#{movie_id}/?ref_=fn_al_tt_8"))
+    return [] if movie_id.blank?
+    sanitize_single(call_async("/title/#{movie_id}/"))
   end
 
   private
 
   def sanitize_list(html)
     doc = Nokogiri::HTML(html)
-    
-    doc.css('.findList')[0].css('td.result_text a').map { |movie_href|
-      { imdb_id: movie_href.attributes['href'].value.split('/')[2],
-        title: movie_href.text
+    doc.css('.title')[0..4].map { |movie|
+      { imdb_id:        (movie > 'a').first['href'].split('/')[2],
+        title:          (movie > 'a').text,
+        release_year:   (movie > '.year_type').text.delete('()')
       }
     }
   end
 
   def sanitize_single(html)
     doc = Nokogiri::HTML(html)
-    
-    doc.css('.rec-jaw-upper').map { |similar_movie| 
+    doc.css('.rec_overview').map { |similar_movie| 
       { 
         title:        similar_movie.css('.rec-title a').text,
+        release_year: similar_movie.css('.rec-title .nobr').text.delete('()'),
+        image:        get_image(similar_movie.css('.rec_poster img')),
         imdb_rating:  similar_movie.css('.value').text
       }
-    }
+    }.reject { |movie| movie[:imdb_rating].blank? }
+  end
+
+  def get_image(tag)
+    tag.first.nil? ? '' : tag.first['loadlate']
   end
 
 end

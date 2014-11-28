@@ -1,130 +1,66 @@
 # variables
 
 queryButton       = $('#query-button')
-errorField        = $('.error') 
-moviesContainer   = $('.movies')
-movieContainer    = $('#movie')
+query             = $('#query')
+spinner           = $('.spinner')
 movieListTemplate = Handlebars.compile $('#movie-list-template').html()
 movieTemplate     = Handlebars.compile $('#movie-template').html()
-movie             = ''
-suggestedMovies   = []
+movieCache        = {}
+movieList         = $('.movies')
+suggestedMovie    = $('#movie')
 
 # functions
 
-disableForm = ->
-  moviesContainer.text('')
-  movieContainer.text('')
-  $('#movie').removeClass('show')
-  queryButton.attr('disabled', true)
-  $('#query').val('')
+resolve = (url) ->
+  return Bacon.once(movieCache[url]) if movieCache[url]? && !_.isEmpty(movieCache[url])
+  Bacon.fromPromise($.getJSON(url)).flatMap (json) -> movieCache[url] = json
 
-spin = -> $('.spinner').addClass('show')
-unspin = -> $('.spinner').removeClass('show')
-
-enableForm = ->
-  queryButton.attr('disabled', false)
-
-# events
-
-$(document).on 'keyup', '#query', (event) ->
-  queryButton.trigger('click') if event.which == 13
+toggleRequest = ->
+    suggestedMovie.removeClass('show')
+    spinner.toggleClass('show')
+    query.val('')
+    queryButton.prop 'disabled', (index, oldValue) -> !oldValue
 
 # streams
 
-clickStream = Rx.Observable.fromEvent document, 'click'
+keyStream = $(document).asEventStream('keyup')
 
-queryClicks = clickStream
+enterKeys = keyStream
   .filter (event) ->
-    $(event.target).attr('id') == 'query-button'
+    event.which == 13
 
-closeClicks = clickStream
-  .filter (event) ->
-    $(event.target).attr('id') == 'movie'
+queryURLStream = queryButton.asEventStream('click')
+  .merge(enterKeys)
+  .filter ->
+    query.val().length > 1
+  .map ->
+    movie = query.val()
+    "/movies/search?movie=#{movie}"
 
-movieClicks = clickStream
+movieURLStream = $('body').asEventStream('click', '.movie')
   .debounce(500)
-  .filter (event) ->
-    $(event.target).hasClass('movie') || $(event.target).parents('.movie').length > 0
   .map (event) ->
-    if $(event.target).hasClass('movie')
-      $(event.target)
-    else
-      $(event.target).parents('.movie:first')
+    $movie = $(event.currentTarget)
+    "/movies/similar?tomato_id=#{$movie.data('tomatoId')}&imdb_id=#{$movie.data('imdbId')}"
+ 
+requestStream   = queryURLStream.merge(movieURLStream)
 
-movieCache = movieClicks
-  .filter (movieElement) ->
-    suggestedMovies.length != 0 && movie == movieElement.find('.title').text()
+responseStream  = requestStream.flatMap(resolve)
 
-movieIDs = movieClicks
-  .filter (movieElement) ->
-    suggestedMovies.length == 0 || movie != movieElement.find('.title').text()
-  .map (movieElement) ->
-    if $('.active').data('tomato_id') != movieElement.data('tomato_id')
-      $('.active').removeClass('active')
-      movieElement.addClass('active')
-    movie = movieElement.find('.title').text()
-    $('#movie').removeClass('show')
-    { tomatoID: movieElement.data('tomatoId'), imdbID: movieElement.data('imdbId') }
+movieListStream = responseStream
+  .filter (json) -> json.total?
+  .map    (json) -> _.map(json.movies, (movie) -> movieListTemplate(movie))
 
-searchURLs = queryClicks
-  .map ->
-    movieName = $('#query').val()
-    disableForm()
-    "/movies/search?movie=#{movieName}"
-
-similarMovieURLs = movieIDs
-  .map (id) ->
-    "/movies/similar?tomato_id=#{id.tomatoID}&imdb_id=#{id.imdbID}"
-
-requests  = Rx.Observable.merge(searchURLs, similarMovieURLs)
-
-responses = requests
-  .flatMap (requestUrl) ->
-    spin()
-    Rx.Observable.fromPromise $.getJSON(requestUrl)
-
-# Turn into hot source
-jsonResponses = responses.publish()
-
-movieJSON     = jsonResponses
+movieStream     = responseStream
   .filter (json) -> !json.total?
-  .map  (json) -> suggestedMovies = json
+  .map    (json) -> movieTemplate _.bob(json)
 
-movieListJSON = jsonResponses.filter (json) -> json.total?
+requestInProgress = requestStream.merge(responseStream)
 
-movieListHTML = movieListJSON
-  .map (json) ->
-    _.map(json.movies, (movie) -> movieListTemplate(movie))
+# observers
 
-movieHTML = movieCache
-  .merge(movieJSON)
-  .map ->
-    if suggestedMovies.length > 0
-      suggestion = _.sample(suggestedMovies)
-      index = suggestedMovies.indexOf(suggestion)
-      suggestedMovies.splice(index, 1)
-      movieTemplate(suggestion)
-    else
-      "Sorry, no suggeted movies for that one - get better taste please."
-   
-# subscriptions
+requestInProgress.onValue -> toggleRequest()
+movieListStream.onValue (html) -> movieList.html(html)
+movieStream.onValue     (html) -> suggestedMovie.html(html).addClass('show')
 
-movieListHTML.subscribe(
-  (html) ->
-    unspin()
-    moviesContainer.html(html)
-    enableForm()
-)
-
-movieHTML.subscribe(
-  (html) ->
-    unspin()
-    $('#movie').addClass('show')
-    movieContainer.html(html)
-)
-
-closeClicks.subscribe(
-  -> $('#movie').toggleClass('show')
-)
-
-jsonResponses.connect()
+    
