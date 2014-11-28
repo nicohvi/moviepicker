@@ -32,7 +32,7 @@ class MoviesController < ApplicationController
 
   def merge_api_responses(tomato_json, imdb_json)
     movies = tomato_json + imdb_json
-    movies.group_by { |movie| movie[:title] }.map { |key, value| value.inject(:merge) }
+    movies.group_by { |movie| "#{movie[:title]}-#{movie[:release_year]}" }.map { |key, value| value.inject(:merge) }
   end
 
 end
