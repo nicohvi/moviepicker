@@ -11,6 +11,7 @@ class TomatoAdapter
     return [] if movie.blank?
     options = { query: { q: movie } }
     api_response = call_async('/movies.json', options)
+    if api_response.code != 200 then return [] end
     sanitize JSON.parse(api_response)['movies']
   end
 

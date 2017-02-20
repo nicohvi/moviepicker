@@ -10,7 +10,7 @@ class MoviesController < ApplicationController
     imdb_json   = @imdb_adapter.search(params[:movie]) 
     movies = merge_api_responses(tomato_json, imdb_json)
     if movies.empty?
-      render json: { error: t('error.no_results') }, status: 404
+      render json: []
     else  
       render json:  render_to_string( template: 'movies/list.json.jbuilder', 
                       locals: { movies: movies } )

@@ -5,7 +5,6 @@ class IMDBAdapter
   include AdapterBridge
   base_uri 'http://www.imdb.com/'
   headers 'Accept-language' => 'en-US'
-    
   
   def initialize
   end 
